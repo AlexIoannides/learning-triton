@@ -1,0 +1,34 @@
+[project]
+name = "learning-triton"
+version = "0.1.0.dev0"
+description = "Triton examples"
+readme = "README.md"
+authors = [
+    { name = "alexioannides", email = "alex.ioanndies@yahoo.co.uk" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "torch>=2.11.0; sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "torch>=2.11.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "triton>=3.5.0; sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+
+[project.scripts]
+learning-triton = "learning_triton.examples:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128", marker = "sys_platform == 'linux' and platform_machine == 'x86_64'" }
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.4",
+]
