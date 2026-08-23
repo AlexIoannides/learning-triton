@@ -1,2 +1,3 @@
-# learning-triton
-Experiments with custom kernels development using Triton
+# Learning Triton
+
+Experiments with custom kernel development using Triton.
