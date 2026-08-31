@@ -18,14 +18,20 @@ def _add_kernel(
     Args:
         x_ptr: Pointer to first element of the ``x`` input vector.
         y_ptr: Pointer to first element of the ``y`` input vector.
-        y_ptr: Pointer to first element of the ``y`` output vector.
+        z_ptr: Pointer to first element of the ``y`` output vector.
         n_elements: Number of elements in the vectors.
         BLOCK_SIZE: The number of data elements operated on within a single block.
     """
-    program_id = tl.program_id(axis=0)  # Retreive the program ID for this block
+    program_id = tl.program_id(axis=0)  # Retrieve the program ID for this block
     block_start = program_id * BLOCK_SIZE  # Starting array index for this block
     offsets = block_start + tl.arange(0, BLOCK_SIZE)  # All array indices for this block
     mask = offsets < n_elements  # If n_elements % BLOCK_SIZE != 0 mask out-of-range
+
+    x = tl.load(x_ptr + offsets, mask=mask)
+    y = tl.load(y_ptr + offsets, mask=mask)
+    z = x + y
+
+    tl.store(z_ptr + offsets, z, mask=mask)
 
 
 def add(x: torch.Tensor, y: torch.Tensor, BLOCK_SIZE: int = 1024) -> torch.Tensor:
@@ -49,7 +55,14 @@ def add(x: torch.Tensor, y: torch.Tensor, BLOCK_SIZE: int = 1024) -> torch.Tenso
 
     z = torch.empty_like(x)
     n_elements = x.numel()
-    grid = lambda meta: triton.cdiv(n_elements, meta["BLOCK_SIZE"])
-    _add_kernel[grid](x, y, z, n_elements)
+    grid = lambda meta: (triton.cdiv(n_elements, meta["BLOCK_SIZE"]),)
+    _add_kernel[grid](x, y, z, n_elements, BLOCK_SIZE=BLOCK_SIZE)  # type: ignore
 
     return z
+
+
+if __name__ == "__main__":
+    x = torch.ones(4096, device="cuda")
+    y = torch.ones(4096, device="cuda")
+    z = add(x, y)
+    print(f"{z=}")
