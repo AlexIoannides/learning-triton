@@ -1,4 +1,26 @@
-"""Vector addition."""
+"""Vector addition.
+
+This module demonstrates a simple Triton kernel that adds two CUDA tensors
+element-wise. The first time this script is run, Triton will compile the kernel
+and cache the artifacts in the ``.triton`` directory. For example:
+
+    ll ../.triton/cache/B2JIAJYUKPCXPPTRDFJVO4BWZEWLZTW3XVC4E6AULWZEXFNYMGIA/
+    total 56
+    drwxr-xr-x 2 root root 4096 Aug 31 15:48 ./
+    drwxr-xr-x 8 root root 4096 Aug 31 15:56 ../
+    -rw-r--r-- 1 root root  814 Aug 31 15:48 __grp___add_kernel.json
+    -rw-r--r-- 1 root root 6376 Aug 31 15:48 _add_kernel.cubin
+    -rw-r--r-- 1 root root 1100 Aug 31 15:48 _add_kernel.json
+    -rw-r--r-- 1 root root 6906 Aug 31 15:48 _add_kernel.llir
+    -rw-r--r-- 1 root root 5560 Aug 31 15:48 _add_kernel.ptx
+    -rw-r--r-- 1 root root 4759 Aug 31 15:48 _add_kernel.source
+    -rw-r--r-- 1 root root 3670 Aug 31 15:48 _add_kernel.ttgir
+    -rw-r--r-- 1 root root 3264 Aug 31 15:48 _add_kernel.ttir
+
+Run this script with:
+
+    uv run python -m learning_triton.addition
+"""
 
 import torch
 import triton
