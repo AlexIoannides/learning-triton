@@ -9,18 +9,23 @@ import triton.language as tl
 def _add_kernel(
     x_ptr: tl.pointer_type,
     y_ptr: tl.pointer_type,
+    z_ptr: tl.pointer_type,
     n_elements: int,
     BLOCK_SIZE: tl.constexpr,
 ) -> None:
     """GPU vector addition kernel.
 
     Args:
-        x_ptr: Pointer to first element of ``x`` vector.
-        y_ptr: Pointer to first element of ``y`` vector.
+        x_ptr: Pointer to first element of the ``x`` input vector.
+        y_ptr: Pointer to first element of the ``y`` input vector.
+        y_ptr: Pointer to first element of the ``y`` output vector.
         n_elements: Number of elements in the vectors.
-        BLOCK_SIZE: _description_
+        BLOCK_SIZE: The number of data elements operated on within a single block.
     """
-    pass
+    program_id = tl.program_id(axis=0)  # Retreive the program ID for this block
+    block_start = program_id * BLOCK_SIZE  # Starting array index for this block
+    offsets = block_start + tl.arange(0, BLOCK_SIZE)  # All array indices for this block
+    mask = offsets < n_elements  # If n_elements % BLOCK_SIZE != 0 mask out-of-range
 
 
 def add(x: torch.Tensor, y: torch.Tensor, BLOCK_SIZE: int = 1024) -> torch.Tensor:
@@ -29,10 +34,11 @@ def add(x: torch.Tensor, y: torch.Tensor, BLOCK_SIZE: int = 1024) -> torch.Tenso
     Args:
         x: First tensor.
         y: Second tensor.
-        BLOCK_SIZE: _description_. Defaults to 1024.
+        BLOCK_SIZE: The number of data elements operated on within a single block.
+            Defaults to 1024.
 
     Returns:
-        A tensor with the result of the addition operation. 
+        A tensor with the result of the addition operation.
 
     Raises:
         ValueError: If ``x`` or ``y`` are not on a CUDA device.
@@ -43,7 +49,7 @@ def add(x: torch.Tensor, y: torch.Tensor, BLOCK_SIZE: int = 1024) -> torch.Tenso
 
     z = torch.empty_like(x)
     n_elements = x.numel()
-    grid = lambda meta: triton.cdiv(n_elements, meta['BLOCK_SIZE'])
+    grid = lambda meta: triton.cdiv(n_elements, meta["BLOCK_SIZE"])
     _add_kernel[grid](x, y, z, n_elements)
 
     return z
