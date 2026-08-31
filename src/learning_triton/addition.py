@@ -63,7 +63,7 @@ def add(x: torch.Tensor, y: torch.Tensor, BLOCK_SIZE: int = 1024) -> torch.Tenso
 
 if __name__ == "__main__":
     # Basic kernel tests
-    n_elements = 1024 * 100
+    n_elements = 1024 * 100  # 4 * 1024 * 100 / (1024 ^ 2) = 0.4 MB
     x = torch.ones(n_elements, device="cuda", dtype=torch.float32)
     y = torch.ones(n_elements, device="cuda", dtype=torch.float32)
     z = add(x, y)
@@ -76,12 +76,12 @@ if __name__ == "__main__":
     triton_benchmark_time = triton.testing.do_bench(
         lambda: add(x, y),
         warmup=25,
-        rep=100,
+        rep=1000,
     )
     pytorch_benchmark_time = triton.testing.do_bench(
         lambda: x + y,
         warmup=25,
-        rep=100,
+        rep=1000,
     )
     print(f"{triton_benchmark_time=}")
     print(f"{pytorch_benchmark_time=}")
