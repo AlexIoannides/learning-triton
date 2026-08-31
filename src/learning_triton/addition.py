@@ -41,4 +41,9 @@ def add(x: torch.Tensor, y: torch.Tensor, BLOCK_SIZE: int = 1024) -> torch.Tenso
         msg = f"Both x and y must be on CUDA device: {x.is_cuda=}; {y.is_cuda=}"
         raise ValueError(msg)
 
-    return torch.tensor([1.0])
+    z = torch.empty_like(x)
+    n_elements = x.numel()
+    grid = lambda meta: triton.cdiv(n_elements, meta['BLOCK_SIZE'])
+    _add_kernel[grid](x, y, z, n_elements)
+
+    return z
