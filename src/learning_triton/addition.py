@@ -62,8 +62,9 @@ def add(x: torch.Tensor, y: torch.Tensor, BLOCK_SIZE: int = 1024) -> torch.Tenso
     Args:
         x: First tensor.
         y: Second tensor.
-        BLOCK_SIZE: The number of data elements operated on within a single block.
-            Defaults to 1024.
+        BLOCK_SIZE: The number of data elements operated on within a single block. Note,
+            Triton will compile one kernel per-block size. Thus, the block size needs to
+            be defined in advance. Defaults to 1024.
 
     Returns:
         A tensor with the result of the addition operation.
