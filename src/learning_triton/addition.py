@@ -77,7 +77,7 @@ def add(x: torch.Tensor, y: torch.Tensor, BLOCK_SIZE: int = 1024) -> torch.Tenso
 
     z = torch.empty_like(x)
     n_elements = x.numel()
-    grid = lambda meta: (triton.cdiv(n_elements, meta["BLOCK_SIZE"]),)
+    grid = lambda meta: (triton.cdiv(n_elements, meta["BLOCK_SIZE"]),)  # 1D grid
     _add_kernel[grid](x, y, z, n_elements, BLOCK_SIZE=BLOCK_SIZE)  # type: ignore
 
     return z
